@@ -1,0 +1,15 @@
+[Unit]
+Description=Temperature Monitor Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=mstadelman
+WorkingDirectory=/home/mstadelman
+ExecStart=/home/mstadelman/temperature-monitor.sh
+
+[Install]
+WantedBy=multi-user.target1
