@@ -12,4 +12,4 @@ WorkingDirectory=/home/mstadelman
 ExecStart=/home/mstadelman/temperature-monitor.sh
 
 [Install]
-WantedBy=multi-user.target1
+WantedBy=multi-user.target
