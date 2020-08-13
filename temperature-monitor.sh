@@ -19,7 +19,7 @@ save_temperature() {
 }
 
 select_data() {
-    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name='$1';" | sed 's/ EDT//g' | awk -F '|' '{printf "%s,%s,%f\n", $1,$2,$3*1.8+32;}'
+    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name='$1';" | sed 's/ EDT//g' | awk -F '|' -f process_sql_data.awk
 }
 
 while true
