@@ -19,7 +19,7 @@ save_temperature() {
 }
 
 select_data() {
-    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name='$1';" | sed 's/|/,/g' | awk -F ',' -v n=0 '{print n,$2,$3*1.8+32; n += 1}'
+    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name='$1';" | sed 's/ EDT//g' | awk -F '|' '{printf "%s,%s,%f\n", $1,$2,$3*1.8+32;}'
 }
 
 while true
@@ -38,8 +38,8 @@ do
     echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
 
     # rengerate plot
-    select_data "$sensor1_name" > "$sensor1_name.dat"
-    select_data "$sensor2_name" > "$sensor2_name.dat"
+    select_data "$sensor1_name" > "$sensor1_name.csv"
+    select_data "$sensor2_name" > "$sensor2_name.csv"
     gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name'" temperature-plot.plt > temperature.png
 
     # regenerate template
