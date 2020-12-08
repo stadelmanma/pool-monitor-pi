@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 w1_dir="/sys/bus/w1/devices"
 sensor1_uuid="28-011937c85701"
 sensor1_name="air"
@@ -19,7 +21,13 @@ save_temperature() {
 }
 
 select_data() {
-    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name='$1';" | sed 's/ EDT//g' | awk -F '|' -f process_sql_data.awk
+    sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name=\"$1\" and timestamp > \"$2\";" | sed 's/ E[DS]T//g' | awk -F '|' -f process_sql_data.awk
+}
+
+plot_data() {
+    select_data "$sensor1_name" "$1" > "$sensor1_name.csv"
+    select_data "$sensor2_name" "$1" > "$sensor2_name.csv"
+    gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name'" temperature-plot.plt
 }
 
 while true
@@ -38,9 +46,10 @@ do
     echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
 
     # rengerate plot
-    select_data "$sensor1_name" > "$sensor1_name.csv"
-    select_data "$sensor2_name" > "$sensor2_name.csv"
-    gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name'" temperature-plot.plt > temperature.png
+    plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" > temperature-24h.png
+    plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" > temperature-7d.png
+    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" > temperature-1y.png
+
 
     # regenerate template
     sed "s/%timestamp%/$timestamp/" "$html_template" | \
