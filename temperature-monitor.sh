@@ -44,7 +44,7 @@ plot_data() {
     # output: PNG formatted plot image
     select_data "$sensor1_name" "$1" $2 $3 > "$sensor1_name.csv"
     select_data "$sensor2_name" "$1" $2 $3 > "$sensor2_name.csv"
-    gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name'" temperature-plot.plt
+    gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name';xaxis_fmt='$4'" temperature-plot.plt
 }
 
 while true
@@ -63,9 +63,9 @@ do
     echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
 
     # rengerate plot
-    plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 > temperature-24h.png
-    plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 > temperature-7d.png
-    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 > temperature-1y.png
+    plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > temperature-24h.png
+    plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > temperature-7d.png
+    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > temperature-1y.png
 
 
     # regenerate template
