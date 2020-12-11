@@ -17,6 +17,6 @@ NR>=n {
 }
 
 END {
-    for (j=1; j<=k; j++)
+    for (j=1; j<=k; j+=s)
         printf "%s,%s,%f\n", timestamp[j],src_name[j],avgs[j]
 }
