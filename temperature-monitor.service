@@ -7,7 +7,7 @@ Wants=temperature-monitor.timer
 Type=oneshot
 User=mstadelman
 WorkingDirectory=/opt/pool-monitor-pi
-ExecStart=/home/mstadelman/temperature-monitor.sh
+ExecStart=/opt/pool-monitor-pi/temperature-monitor.sh
 EnvironmentFile=/opt/pool-monitor-pi/env
 
 [Install]

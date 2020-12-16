@@ -1,15 +1,18 @@
 #!/bin/sh
-set -e
+#
+# The actual values for following variables should be set by the env file
+# in the service script:
+# sensor1_uuid="28-011937c85701"
+# sensor1_name="air"
+# sensor2_uuid="28-01193804ca0b"
+# sensor2_name="water"
+# temperature_db="temperature-readings.db"
+# html_template="template.html"
+# output_path="/var/www/html"
+# interval=60
+set -en
 
 w1_dir="/sys/bus/w1/devices"
-sensor1_uuid="28-011937c85701"
-sensor1_name="air"
-sensor2_uuid="28-01193804ca0b"
-sensor2_name="water"
-temperature_db="/home/mstadelman/temperature-readings.db"
-html_template="/home/mstadelman/pool-monitor-pi/template.html"
-interval=60
-
 
 read_temperature() {
     # Reads a temperature value from the sensor's data bus
@@ -47,34 +50,30 @@ plot_data() {
     gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name';xaxis_fmt='$4'" temperature-plot.plt
 }
 
-while true
-do
-    # take readings
-    temp="$(read_temperature $sensor1_uuid)"
-    sensor1_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
-    save_temperature "$sensor1_uuid" "$sensor1_name" "$timestamp" "$temp"
-    echo "Saved $sensor1_name temperature reading of $temp at $timestamp"
 
-    temp="$(read_temperature $sensor2_uuid)"
-    sensor2_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
-    save_temperature "$sensor2_uuid" "$sensor2_name" "$timestamp" "$temp"
-    echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
+# take readings
+temp="$(read_temperature $sensor1_uuid)"
+sensor1_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
+timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
+save_temperature "$sensor1_uuid" "$sensor1_name" "$timestamp" "$temp"
+echo "Saved $sensor1_name temperature reading of $temp at $timestamp"
 
-    # rengerate plot
-    plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > temperature-24h.png
-    plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > temperature-7d.png
-    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > temperature-1y.png
+temp="$(read_temperature $sensor2_uuid)"
+sensor2_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
+timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
+save_temperature "$sensor2_uuid" "$sensor2_name" "$timestamp" "$temp"
+echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
 
 
-    # regenerate template
-    sed "s/%timestamp%/$timestamp/" "$html_template" | \
-	sed "s/%sensor1_name%/$sensor1_name/" | \
-	sed "s/%sensor1_temp%/$sensor1_tempf/" | \
-	sed "s/%sensor2_name%/$sensor2_name/" | \
-	sed "s/%sensor2_temp%/$sensor2_tempf/" > /var/www/html/index.html
+# rengerate plots
+plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > "$output_path/temperature-24h.png"
+plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > "$output_path/temperature-7d.png"
+plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
 
-    # wait so many seconds until next reading
-    sleep $interval
-done
+
+# regenerate template
+sed "s/%timestamp%/$timestamp/" "$html_template" | \
+sed "s/%sensor1_name%/$sensor1_name/" | \
+sed "s/%sensor1_temp%/$sensor1_tempf/" | \
+sed "s/%sensor2_name%/$sensor2_name/" | \
+sed "s/%sensor2_temp%/$sensor2_tempf/" > "$output_path/index.html"
