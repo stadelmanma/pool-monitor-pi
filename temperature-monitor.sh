@@ -97,6 +97,8 @@ if [ "$(($counter % 21600))" = "0" ]; then  # 6 hours
     plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
     echo "Uploading 1y plot to B2 bucket '$b2_bucket'..."
     ~/.local/bin/b2 upload-file "$b2_bucket" "$output_path/temperature-1y.png" temperature-1y.png
+    echo "Uploading database to B2 bucket '$b2_bucket'..."
+    ~/.local/bin/b2 upload-file "$b2_bucket" "$temperature_db" temperature-readings.db
 fi
 
 
