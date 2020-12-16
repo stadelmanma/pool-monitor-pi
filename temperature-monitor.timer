@@ -1,0 +1,10 @@
+[Unit]
+Description=Run the temperature monitoring script on an interval
+Requires=temperature-monitor.service
+
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+
+[Install]
+WantedBy=timers.target

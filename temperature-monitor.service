@@ -1,15 +1,14 @@
 [Unit]
 Description=Temperature Monitor Service
 After=network.target
-StartLimitIntervalSec=0
+Wants=temperature-monitor.timer
 
 [Service]
-Type=simple
-Restart=always
-RestartSec=5
+Type=oneshot
 User=mstadelman
-WorkingDirectory=/home/mstadelman
+WorkingDirectory=/opt/pool-monitor-pi
 ExecStart=/home/mstadelman/temperature-monitor.sh
+EnvironmentFile=/opt/pool-monitor-pi/env
 
 [Install]
 WantedBy=multi-user.target
