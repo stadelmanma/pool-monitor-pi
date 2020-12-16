@@ -10,7 +10,7 @@
 # html_template="template.html"
 # output_path="/var/www/html"
 # interval=60
-set -en
+set -eu
 
 w1_dir="/sys/bus/w1/devices"
 
