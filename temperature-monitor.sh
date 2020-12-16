@@ -82,17 +82,17 @@ echo "Saved $sensor2_name temperature reading of ${temp}C at $timestamp"
 
 
 # regenerate plots, this is expensive so we don't do it every time
-if [ -z $(($counter % 300)) ]; then  # 5 minutes
+if [ "$(($counter % 300))" = "0" ]; then  # 5 minutes
     echo "Recreating 24h plot..."
     plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > "$output_path/temperature-24h.png"
 fi
-if [ -z $(($counter % 3600)) ]; then  # 1 hour
+if [ "$(($counter % 3600))" = "0" ]; then  # 1 hour
     echo "Recreating 7d plot..."
     plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > "$output_path/temperature-7d.png"
     echo "Uploading 7d plot to B2 bucket '$b2_bucket'..."
     ~/.local/bin/b2 upload-file "$b2_bucket" "$output_path/temperature-7d.png" temperature-7d.png
 fi
-if [ -z $(($counter % 21600)) ]; then  # 6 hours
+if [ "$(($counter % 21600))" = "0" ]; then  # 6 hours
     echo "Recreating 1y plot..."
     plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
     echo "Uploading 1y plot to B2 bucket '$b2_bucket'..."
@@ -107,7 +107,7 @@ sed "s/%sensor1_temp%/$sensor1_tempf/" | \
 sed "s/%sensor2_name%/$sensor2_name/" | \
 sed "s/%sensor2_temp%/$sensor2_tempf/" > "$output_path/index.html"
 
-if [ -z $(($counter % 900)) ]; then  # 15 minutes
+if [ "$(($counter % 900))" = "0" ]; then  # 15 minutes
     echo "Recreating 1y plot..."
     plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
     echo "Uploading 24h plot and HTML page to B2 bucket '$b2_bucket'..."
