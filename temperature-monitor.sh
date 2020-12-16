@@ -13,6 +13,8 @@
 set -eu
 
 w1_dir="/sys/bus/w1/devices"
+counter_file="temperature-monitor.counter"
+
 
 read_temperature() {
     # Reads a temperature value from the sensor's data bus
@@ -31,6 +33,7 @@ save_temperature() {
     sqlite3 "$temperature_db"  "insert into readings (source_uuid, source_name, timestamp, temperature) values ('$1', '$2', '$3', $4);"
 }
 
+
 select_data() {
     # Select data based on the timestamp and process it into CSV format
     #
@@ -38,6 +41,7 @@ select_data() {
     # output: comma delimited temperature data: timestamp, sensor_name, degF
     sqlite3 "$temperature_db" "select timestamp, source_name, temperature from readings where source_name=\"$1\" and timestamp > \"$2\";" | sed 's/ E[DS]T//g' | awk -F '|' -vn=$3 -vs=$4 -f process_sql_data.awk
 }
+
 
 plot_data() {
     # Generate the PNG plot image of the data from each sensor over the
@@ -49,6 +53,17 @@ plot_data() {
     select_data "$sensor2_name" "$1" $2 $3 > "$sensor2_name.csv"
     gnuplot -e "sensor1_name='$sensor1_name';sensor2_name='$sensor2_name';xaxis_fmt='$4'" temperature-plot.plt
 }
+
+
+# read counter so we can trigger specific events, if the file doesn't
+# exist set counter to 0
+if [ ! -f "$counter_file" ]; then
+    counter='0'
+    echo "No counter file found at '$counter_file', setting counter=0"
+else
+    counter=$(cat "$counter_file")
+fi
+echo $(($counter + $interval )) >  "$counter_file"
 
 
 # take readings
@@ -65,10 +80,19 @@ save_temperature "$sensor2_uuid" "$sensor2_name" "$timestamp" "$temp"
 echo "Saved $sensor2_name temperature reading of ${temp}C at $timestamp"
 
 
-# rengerate plots
-plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > "$output_path/temperature-24h.png"
-plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > "$output_path/temperature-7d.png"
-plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
+# regenerate plots, this is expensive so we don't do it every time
+if [ -z $(($counter % 300)) ]; then  # 5 minutes
+    echo "Recreating 24h plot..."
+    plot_data "$(date -d "$(date) - 24 hours" '+%Y-%m-%d %H:%M:%S %Z')" 10 2 '%m/%d %H:%M' > "$output_path/temperature-24h.png"
+fi
+if [ -z $(($counter % 3600)) ]; then  # 1 hour
+    echo "Recreating 7d plo..."
+    plot_data "$(date -d "$(date) - 7 days" '+%Y-%m-%d %H:%M:%S %Z')" 20 5 '%m/%d' > "$output_path/temperature-7d.png"
+fi
+if [ -z $(($counter % 21600)) ]; then  # 6 hours
+    echo "Recreating 1y plot..."
+    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
+fi
 
 
 # regenerate template
