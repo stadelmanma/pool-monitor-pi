@@ -56,13 +56,13 @@ temp="$(read_temperature $sensor1_uuid)"
 sensor1_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
 timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
 save_temperature "$sensor1_uuid" "$sensor1_name" "$timestamp" "$temp"
-echo "Saved $sensor1_name temperature reading of $temp at $timestamp"
+echo "Saved $sensor1_name temperature reading of ${temp}C at $timestamp"
 
 temp="$(read_temperature $sensor2_uuid)"
 sensor2_tempf=$(awk "BEGIN {print $temp*1.8 + 32}")
 timestamp="$(date '+%Y-%m-%d %H:%M:%S %Z')"
 save_temperature "$sensor2_uuid" "$sensor2_name" "$timestamp" "$temp"
-echo "Saved $sensor2_name temperature reading of $temp at $timestamp"
+echo "Saved $sensor2_name temperature reading of ${temp}C at $timestamp"
 
 
 # rengerate plots
