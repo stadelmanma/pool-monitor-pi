@@ -108,8 +108,6 @@ sed "s/%sensor2_name%/$sensor2_name/" | \
 sed "s/%sensor2_temp%/$sensor2_tempf/" > "$output_path/index.html"
 
 if [ "$(($counter % 900))" = "0" ]; then  # 15 minutes
-    echo "Recreating 1y plot..."
-    plot_data "$(date -d "$(date) - 1 year" '+%Y-%m-%d %H:%M:%S %Z')" 100 10 '%m/%d' > "$output_path/temperature-1y.png"
     echo "Uploading 24h plot and HTML page to B2 bucket '$b2_bucket'..."
     ~/.local/bin/b2 upload-file "$b2_bucket" "$output_path/index.html" temperature.html
     ~/.local/bin/b2 upload-file "$b2_bucket" "$output_path/temperature-24h.png" temperature-24h.png
