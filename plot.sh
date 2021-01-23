@@ -9,7 +9,7 @@
 # output_path="."
 set -eu
 
-source ./env
+. ./env
 
 select_data() {
     # Select data based on the timestamp and process it into CSV format
